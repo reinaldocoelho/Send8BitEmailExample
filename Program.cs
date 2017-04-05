@@ -17,13 +17,14 @@ namespace Send8BitEmail
             {
                 Subject = "Assunto teste acento çãõáéíóú",
                 IsBodyHtml = false,
-                Body = null,
-                BodyEncoding = System.Text.Encoding.UTF8
+                BodyEncoding = System.Text.Encoding.UTF8,
+                HeadersEncoding = System.Text.Encoding.UTF8,
+                SubjectEncoding = System.Text.Encoding.UTF8
             };
             using (AlternateView body = AlternateView.CreateAlternateViewFromString(
                     "Assunto teste acento çãõáéíóú",
                     message.BodyEncoding,
-                    message.IsBodyHtml ? "text/html" : null
+                    message.IsBodyHtml ? "text/html" : "text/plain"
                 )
             )
             {
@@ -31,8 +32,10 @@ namespace Send8BitEmail
                 message.AlternateViews.Add(body);
                 try
                 {
-                    using (var smtp = new SmtpClient("localhost", 25))
+                    using (var smtp = new SmtpClient("localhost", 9025))
                     {
+                        smtp.DeliveryMethod = SmtpDeliveryMethod.Network;
+                        smtp.DeliveryFormat = SmtpDeliveryFormat.International;
                         smtp.EnableSsl = false;
                         //smtp.UseDefaultCredentials = true;
                         //smtp.Credentials = new System.Net.NetworkCredential("ronaldo.lambda@gmail.com", "teste666");
