@@ -6,26 +6,20 @@ namespace Send8BitEmail
 {
     class Program
     {
-        private static string _mailFrom = "ronaldo.lambda@gmail.com";
-        private static string _mailTo = "reinaldo.enkilabs@gmail.com";
-        private static string _subject = "Assunto teste acento çãõáéíóú";
-        private static string _body = "Corpo do e-mail de teste acento çãõáéíóú";
+        private static string _mailFrom = "teste@testmail.com";
+        private static string _mailTo = "reinaldo.coelho@gmail.com";
+        private static string _subject = "Test accent subject çãõáéíóú";
+        private static string _body = "Body with special char çãõáéíóú";
         private static SmtpDeliveryMethod _deliveryMethod = SmtpDeliveryMethod.Network;
         private static SmtpDeliveryFormat _deliveryFormat = SmtpDeliveryFormat.International;
 
         // SMTP SERVER LOCAL
-        //private static string _smtpServer = "localhost";
-        //private static int _smtpPort = 25;
-        //private static bool _enableSsl = false;
-        //private static bool _useDefaultCredential = false;
-        
-        // SMTP SERVER GMAIL
-        private static string _smtpServer = "smtp.gmail.com";
-        private static int _smtpPort = 587;
-        private static bool _enableSsl = true;
-        private static bool _useDefaultCredential = true;
-        private static string _userName = "ronaldo.lambda@gmail.com";
-        private static string _password = "teste666";
+        private static string _smtpServer = "localhost";
+        private static int _smtpPort = 9025;
+        private static bool _enableSsl = false;
+        private static bool _useDefaultCredential = false;
+        private static string _userName = "";
+        private static string _password = "";
 
 
         static void Main(string[] args)
@@ -77,6 +71,7 @@ namespace Send8BitEmail
                 }
             }
         }
+
         public static void SendEmail8BitIso88591()
         {
             var message = new MailMessage(_mailFrom, _mailTo)
