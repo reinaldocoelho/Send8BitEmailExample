@@ -1,119 +1,96 @@
-﻿using System;
-using System.Net.Mail;
-using System.Net.Mime;
+﻿using SendEmailsTest;
+using System;
+using System.Text;
 
 namespace Send8BitEmail
 {
-    class Program
+    public class Program
     {
-        private static string _mailFrom = "teste@testmail.com";
-        private static string _mailTo = "reinaldo.coelho@gmail.com";
+        // SMTP SERVER LOCAL
+        private static string _smtpServer = "smtp.gmail.com";
+        private static int _smtpPort = 587;
+        private static bool _enableSsl = true;
+        private static bool _useDefaultCredential = true;
+        private static string _userName = "ronaldo.lambda@gmail.com";
+        private static string _password = "xxxxxxx";
+        // Email data
+        //private static string _mailFrom = "teste@testmail.com";
+        private static string _mailFrom = "ronaldo.lambda@gmail.com";
+        private static string _mailTo = "reinaldo@sorridents.encontact.tmp.br";
         private static string _subject = "Test accent subject çãõáéíóú";
         private static string _body = "Body with special char çãõáéíóú";
-        private static SmtpDeliveryMethod _deliveryMethod = SmtpDeliveryMethod.Network;
-        private static SmtpDeliveryFormat _deliveryFormat = SmtpDeliveryFormat.International;
-
-        // SMTP SERVER LOCAL
-        private static string _smtpServer = "localhost";
-        private static int _smtpPort = 9025;
-        private static bool _enableSsl = false;
-        private static bool _useDefaultCredential = false;
-        private static string _userName = "";
-        private static string _password = "";
-
 
         static void Main(string[] args)
         {
-            SendEmail8BitUtf8();
-            SendEmail8BitIso88591();
-        }
-
-        public static void SendEmail8BitUtf8()
-        {
-            var message = new MailMessage(_mailFrom, _mailTo)
+            var loopQuantity = 1;
+            if(args.Length > 0 && args[0].StartsWith("-q"))
             {
-                Subject = _subject,
-                IsBodyHtml = false,
-                BodyEncoding = System.Text.Encoding.UTF8,
-                HeadersEncoding = System.Text.Encoding.UTF8,
-                SubjectEncoding = System.Text.Encoding.UTF8
-            };
-            using (AlternateView body = AlternateView.CreateAlternateViewFromString(
-                    _body,
-                    message.BodyEncoding,
-                    message.IsBodyHtml ? "text/html" : "text/plain"
-                )
-            )
+                if(!Int32.TryParse(args[0].TrimStart('-', 'q'), out loopQuantity))
+                {
+                    Console.WriteLine("ERROR: Parameter -q must be numeric. Using only one loop quantity.");
+                }
+            }
+            
+            for(int i = 0; i < loopQuantity; i++)
             {
-                body.TransferEncoding = TransferEncoding.EightBit;
-                message.AlternateViews.Add(body);
-                try
-                {
-                    using (var smtp = new SmtpClient(_smtpServer, _smtpPort))
-                    {
-                        smtp.DeliveryMethod = _deliveryMethod;
-                        smtp.DeliveryFormat = _deliveryFormat;
-                        smtp.EnableSsl = _enableSsl;
-                        smtp.UseDefaultCredentials = _useDefaultCredential;
-                        if (_useDefaultCredential)
-                        {
-                            smtp.Credentials = new System.Net.NetworkCredential(_userName, _password);
-                        }
-                        smtp.Send(message);
-                    }
-                    Console.WriteLine("E-mail UTF8 enviado com sucesso.");
-                }
-                catch (SmtpException ex)
-                {
-                    Console.WriteLine("Erro ao enviar email UTF8. Ex:" + ex.Message);
-                    System.Diagnostics.Debug.WriteLine(
-                        ex.Message);
-                }
+                SendEmail8BitIso88591();
+                SendEmail8BitUtf8();
+                SendEmailBase64Encoded();
+                SendEmailQuotedPrintableEncoded();
+                SendEmailSevenBitASCIIOnlyEncoded();
             }
         }
 
-        public static void SendEmail8BitIso88591()
+        private static void SendEmail8BitIso88591()
         {
-            var message = new MailMessage(_mailFrom, _mailTo)
-            {
-                Subject = _subject,
-                IsBodyHtml = false,
-                BodyEncoding = System.Text.Encoding.GetEncoding("iso-8859-1"),
-                HeadersEncoding = System.Text.Encoding.GetEncoding("iso-8859-1"),
-                SubjectEncoding = System.Text.Encoding.GetEncoding("iso-8859-1")
-            };
-            using (AlternateView body = AlternateView.CreateAlternateViewFromString(
-                    _body,
-                    message.BodyEncoding,
-                    message.IsBodyHtml ? "text/html" : "text/plain"
-                )
-            )
-            {
-                body.TransferEncoding = TransferEncoding.EightBit;
-                message.AlternateViews.Add(body);
-                try
-                {
-                    using (var smtp = new SmtpClient(_smtpServer, _smtpPort))
-                    {
-                        smtp.DeliveryMethod = _deliveryMethod;
-                        smtp.DeliveryFormat = _deliveryFormat;
-                        smtp.EnableSsl = _enableSsl;
-                        smtp.UseDefaultCredentials = _useDefaultCredential;
-                        if (_useDefaultCredential)
-                        {
-                            smtp.Credentials = new System.Net.NetworkCredential(_userName, _password);
-                        }
-                        smtp.Send(message);
-                    }
-                    Console.WriteLine("E-mail UTF8 enviado com sucesso.");
-                }
-                catch (SmtpException ex)
-                {
-                    Console.WriteLine("Erro ao enviar email ISO. Ex:" + ex.Message);
-                    System.Diagnostics.Debug.WriteLine(
-                        ex.Message);
-                }
-            }
+            var email = new EmailGenerator(_mailTo);
+            email.AppendTextToSubject(_subject);
+            email.AppendTextToBody(_body);
+            email.SetTransferEncoding(System.Net.Mime.TransferEncoding.EightBit);
+            email.SetEncoding(Encoding.GetEncoding("iso-8859-1"));
+            var server = new SmtpServerConfig(_smtpServer, _smtpPort, _enableSsl, _useDefaultCredential, _userName, _password);
+            email.SendEmail(server);
+        }
+
+        private static void SendEmail8BitUtf8()
+        {
+            var email = new EmailGenerator(_mailTo);
+            email.AppendTextToSubject(_subject);
+            email.AppendTextToBody(_body);
+            email.SetTransferEncoding(System.Net.Mime.TransferEncoding.EightBit);
+            email.SetEncoding(Encoding.UTF8);
+            var server = new SmtpServerConfig(_smtpServer, _smtpPort, _enableSsl, _useDefaultCredential, _userName, _password);
+            email.SendEmail(server);
+        }
+
+        private static void SendEmailBase64Encoded()
+        {
+            var email = new EmailGenerator(_mailTo);
+            email.AppendTextToSubject(_subject);
+            email.AppendTextToBody(_body);
+            email.SetTransferEncoding(System.Net.Mime.TransferEncoding.Base64);
+            var server = new SmtpServerConfig(_smtpServer, _smtpPort, _enableSsl, _useDefaultCredential, _userName, _password);
+            email.SendEmail(server);
+        }
+
+        private static void SendEmailQuotedPrintableEncoded()
+        {
+            var email = new EmailGenerator(_mailTo);
+            email.AppendTextToSubject(_subject);
+            email.AppendTextToBody(_body);
+            email.SetTransferEncoding(System.Net.Mime.TransferEncoding.QuotedPrintable);
+            var server = new SmtpServerConfig(_smtpServer, _smtpPort, _enableSsl, _useDefaultCredential, _userName, _password);
+            email.SendEmail(server);
+        }
+
+        private static void SendEmailSevenBitASCIIOnlyEncoded()
+        {
+            var email = new EmailGenerator(_mailTo);
+            email.AppendTextToSubject(_subject);
+            email.AppendTextToBody(_body);
+            email.SetTransferEncoding(System.Net.Mime.TransferEncoding.SevenBit);
+            var server = new SmtpServerConfig(_smtpServer, _smtpPort, _enableSsl, _useDefaultCredential, _userName, _password);
+            email.SendEmail(server);
         }
     }
 }

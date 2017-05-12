@@ -1,9 +1,9 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.26228.9
+VisualStudioVersion = 15.0.26403.7
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Send8BitEmail", "Send8BitEmail.csproj", "{3519F830-1D3E-4296-83FD-13E8BB192F76}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SendEmailsTest", "SendEmailsTest.csproj", "{3519F830-1D3E-4296-83FD-13E8BB192F76}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
